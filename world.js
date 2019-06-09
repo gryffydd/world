@@ -17,12 +17,12 @@
  */
 
 var MAX_SPECIES = 16;
-var MAX_FOOD = 2 ^ 30;
-var MUTATION = 2 ^ 20;
+var MAX_FOOD = 2 ** 30;
+var MUTATION = 2 ** 20;
 
 var population = new Array(MAX_SPECIES);
 
-/* A helper function to set an array to a value */
+/* A function to initialise the first population */
 
 function initialise_population (p) {
     for (i = 0; i < MAX_SPECIES; i++) {
@@ -42,6 +42,9 @@ function level(x) {
     return l;
 }
 
+/* Compute the Maximum Level */
+var MAX_LEVEL = level(MAX_SPECIES - 1);
+
 function prey(x, y) {
     if (level(x) == level(y) + 1) {
         if ((x & y) == y) {
@@ -49,6 +52,11 @@ function prey(x, y) {
         }
     }
     return false;
+}
+
+/* flip a random bit */
+function mutate(p) {
+    return p ^ (1 << int(random(4)));
 }
 
 /* The display plotting functions */
@@ -69,6 +77,51 @@ function display_populations () {
     }
 }
 
+function replicate_mutate_predate (p) {
+    var fed = new Array(MAX_SPECIES);
+
+    for (i = 0; i < MAX_SPECIES; i++) {
+        p[i] = p[i] * 2;
+        if (p[i] > MUTATION) {
+            m = mutate(i);
+            p[i]--;
+            p[m]++;
+        }
+        fed[i] = 0;
+    }
+
+    for (l = 1; l < MAX_LEVEL; l++) {
+        var pred_total = 0;
+        var prey_total = 0;
+        for (i = 0; i < MAX_SPECIES; i++) {
+            if (level(i) == l) {
+                pred_total += p[i];
+            }
+            if (level(i) == (l - 1)) {
+                prey_total += p[i];
+            }
+        }
+        console.log(l + " => " + pred_total +' -> ' + prey_total);
+        if (pred_total < 1) { continue; }
+        var consumption_ratio = Math.min(1, prey_total / float(pred_total));
+        console.log(consumption_ratio);
+        for (i = 0; i < MAX_SPECIES; i++) {
+            for (j = 0; j < MAX_SPECIES; j++) {
+                if (prey(i, j)) {
+                    fed[i] = int(p[i] * consumption_ratio);
+                    p[j] -= fed[i];
+                }
+            }
+        }
+
+    }
+
+    p[0] = Math.max(Math.min(p[0], MAX_FOOD), 1);
+    for (i = 1; i < MAX_SPECIES; i++) {
+        p[i] = Math.max(Math.min(p[i], fed[i]), 0);
+    }
+}
+
 /* The plotting functions */
 
 function setup() {
@@ -81,7 +134,11 @@ function setup() {
 function draw() {
     display_populations();
 
-    noLoop();
+    replicate_mutate_predate(population);
+
+    // noLoop();
+    // if (frameCount > 120) { noLoop(); }
+
 }
 
 /*
