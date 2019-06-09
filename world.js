@@ -73,35 +73,14 @@ function display_populations () {
 
 function setup() {
     createCanvas(740, 740);
-
-    fill([51, 51, 51]);
-    noStroke();
-    rect(0, 0, 740, 740);
+    background(51);
 
     initialise_population(population);
-
-    for (var x = 0; x < 4; x++) {
-        for (var y = 0; y < 4; y++) {
-            var c = 192 - level(x * 4 + y) * 32;
-            fill([255, c, c]);
-            noStroke();
-            rect(x * 180 + 20, y * 180 + 20, 160, 160);
-        }
-    }
-
-    for (var x = 0; x < 4; x++) {
-        for (var y = 0; y < 4; y++) {
-            var t = 'Pop: ' + population[x * 4 + y];
-            fill([0, 0, 0]);
-            textSize(16);
-            textAlign(CENTER, CENTER);
-            text(t, x * 180 + 100, y * 180 + 100);
-        }
-    }
 }
 
 function draw() {
     display_populations();
+
     noLoop();
 }
 
