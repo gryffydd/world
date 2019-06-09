@@ -24,6 +24,15 @@ var population = new Array(MAX_SPECIES);
 
 /* A helper function to set an array to a value */
 
+function initialise_population (p) {
+    for (i = 0; i < MAX_SPECIES; i++) {
+        p[i] = 0;
+    }
+    p[0] = 1;
+}
+
+/* The Predator / Prey functions */
+
 function level(x) {
     var l = 0;
     while (x > 0) {
@@ -42,6 +51,24 @@ function prey(x, y) {
     return false;
 }
 
+/* The display plotting functions */
+
+function display_populations () {
+    textSize(16);
+    textAlign(CENTER, CENTER);
+
+    for (var x = 0; x < 4; x++) {
+        for (var y = 0; y < 4; y++) {
+            var c = 192 - level(x * 4 + y) * 32;
+            fill([255, c, c]);
+            noStroke();
+            rect(x * 180 + 20, y * 180 + 20, 160, 160);
+            fill([0, 0, 0]);
+            text(population[x * 4 + y], x * 180 + 100, y * 180 + 100);
+        }
+    }
+}
+
 /* The plotting functions */
 
 function setup() {
@@ -51,17 +78,30 @@ function setup() {
     noStroke();
     rect(0, 0, 740, 740);
 
+    initialise_population(population);
+
     for (var x = 0; x < 4; x++) {
         for (var y = 0; y < 4; y++) {
-            c = 192 - level(x * 4 + y) * 32;
+            var c = 192 - level(x * 4 + y) * 32;
             fill([255, c, c]);
             noStroke();
             rect(x * 180 + 20, y * 180 + 20, 160, 160);
         }
     }
+
+    for (var x = 0; x < 4; x++) {
+        for (var y = 0; y < 4; y++) {
+            var t = 'Pop: ' + population[x * 4 + y];
+            fill([0, 0, 0]);
+            textSize(16);
+            textAlign(CENTER, CENTER);
+            text(t, x * 180 + 100, y * 180 + 100);
+        }
+    }
 }
 
 function draw() {
+    display_populations();
     noLoop();
 }
 
