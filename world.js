@@ -18,7 +18,7 @@
 
 var MAX_SPECIES = 16;
 var MAX_FOOD = 2 ** 30;
-var MUTATION = 2 ** 20;
+var MUTATION = 2 ** 10;
 
 var population = new Array(MAX_SPECIES);
 
@@ -81,7 +81,7 @@ function replicate_mutate_predate (p) {
     var fed = new Array(MAX_SPECIES);
 
     for (i = 0; i < MAX_SPECIES; i++) {
-        p[i] = p[i] * 2;
+        p[i] *= 2;
         if (p[i] > MUTATION) {
             m = mutate(i);
             p[i]--;
@@ -90,32 +90,48 @@ function replicate_mutate_predate (p) {
         fed[i] = 0;
     }
 
-    for (l = 1; l < MAX_LEVEL; l++) {
+    for (l = 1; l <= MAX_LEVEL; l++) {
         var pred_total = 0;
         var prey_total = 0;
         for (i = 0; i < MAX_SPECIES; i++) {
             if (level(i) == l) {
-                pred_total += p[i];
+                if (p[i] > 0) {
+                    pred_total += p[i];
+                    console.log("Level: " + l + " - Pred: " + i + " - Pred Pop: " + p[i] + " - Pred Total: " + pred_total );
+                }
             }
             if (level(i) == (l - 1)) {
-                prey_total += p[i];
+                if (p[i] > 0) {
+                    prey_total += p[i];
+                    console.log("Level: " + l + " - Prey: " + i + " - Prey Pop: " + p[i] + " - Prey Total: " + prey_total );
+                }
             }
         }
-        console.log(l + " => " + pred_total +' -> ' + prey_total);
+        console.log("Level: " + l + " - Pred: " + pred_total + " - Prey: " + prey_total);
+        if (prey_total < 0) { noLoop(); }
         if (pred_total < 1) { continue; }
+
         var consumption_ratio = Math.min(1, prey_total / float(pred_total));
-        console.log(consumption_ratio);
+        console.log("Consupmtion Ratio: " + consumption_ratio);
+
         for (i = 0; i < MAX_SPECIES; i++) {
-            for (j = 0; j < MAX_SPECIES; j++) {
-                if (prey(i, j)) {
-                    fed[i] = int(p[i] * consumption_ratio);
-                    p[j] -= fed[i];
+            if (level(i) == l && p[i] > 0) {
+                for (j = 0; j < MAX_SPECIES; j++) {
+                    if (prey(i, j)) {
+                        console.log("Pred: " + i + " - Prey: " + j );
+                        console.log("   -> Prey Pop: " + p[i] + " - Prey Fed: " + fed[i] + " - Prey Pop: " + p[j]);
+                        var eaten = int(p[i] * consumption_ratio * p[j] / prey_total + 0.0001);
+                        fed[i] += eaten;
+                        p[j] -= eaten;
+                        console.log("   +> Prey Pop: " + p[i] + " - Prey Fed: " + fed[i] + " - Prey Pop: " + p[j] + " ==> Eaten: " + eaten);
+                    }
                 }
             }
         }
 
     }
 
+    console.log("Food: " + p[0]);
     p[0] = Math.max(Math.min(p[0], MAX_FOOD), 1);
     for (i = 1; i < MAX_SPECIES; i++) {
         p[i] = Math.max(Math.min(p[i], fed[i]), 0);
@@ -128,6 +144,8 @@ function setup() {
     createCanvas(740, 740);
     background(51);
 
+    frameRate(1);
+    
     initialise_population(population);
 }
 
